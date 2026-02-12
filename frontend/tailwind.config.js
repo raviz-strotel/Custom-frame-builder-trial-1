@@ -52,12 +52,12 @@ module.exports = {
                                 '3': 'hsl(var(--chart-3))',
                                 '4': 'hsl(var(--chart-4))',
                                 '5': 'hsl(var(--chart-5))'
-                        }
-                                'background-primary': '#FDFBF7',
-                                'background-secondary': '#F5F5F0',
-                                'text-primary': '#1C1917',
-                                'text-secondary': '#78716C',
-                                'text-muted': '#A8A29E',
+                        },
+                        'background-primary': '#FDFBF7',
+                        'background-secondary': '#F5F5F0',
+                        'text-primary': '#1C1917',
+                        'text-secondary': '#78716C',
+                        'text-muted': '#A8A29E'
                 },
                 keyframes: {
                         'accordion-down': {
