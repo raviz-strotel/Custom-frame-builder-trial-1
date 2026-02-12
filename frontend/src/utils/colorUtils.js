@@ -52,27 +52,40 @@ export function findNearestColor(targetRgb, palette) {
 }
 
 /**
- * Default 20-color palette for pixel art
+ * Fixed 20-color palette for pixel art
  */
 export const DEFAULT_PALETTE = [
-  '#000000', // Black
-  '#FFFFFF', // White
-  '#1C1917', // Dark Gray
-  '#78716C', // Medium Gray
-  '#D6D3D1', // Light Gray
-  '#F97316', // Orange (accent)
-  '#EA580C', // Dark Orange
-  '#FED7AA', // Peach
-  '#DC2626', // Red
-  '#16A34A', // Green
-  '#0EA5E9', // Blue
-  '#8B5CF6', // Purple
-  '#FBBF24', // Yellow
-  '#A78BFA', // Light Purple
-  '#86EFAC', // Light Green
-  '#FCA5A5', // Light Red
-  '#7DD3FC', // Light Blue
-  '#92400E', // Brown
-  '#F3F4F6', // Off White
-  '#FDE68A', // Light Yellow
+  // Blacks / Grays (6)
+  '#000000', // Pure black
+  '#FFFFFF', // Pure white
+  '#2C2C2C', // Dark charcoal
+  '#6B6B6B', // Medium gray
+  '#B8B8B8', // Light gray
+  '#D4D4D4', // Pale gray
+  
+  // Reds / Pinks (3)
+  '#8B1E3F', // Deep crimson
+  '#E63946', // Bright red
+  '#F4A6B5', // Soft pink
+  
+  // Oranges / Yellows (3)
+  '#D95D39', // Burnt orange
+  '#F4B400', // Golden yellow
+  '#FFF3B0', // Pale cream yellow
+  
+  // Greens (2)
+  '#2E7D32', // Forest green
+  '#80ED99', // Mint green
+  
+  // Blues (3)
+  '#1B263B', // Deep navy
+  '#3A86FF', // Royal blue
+  '#90DBF4', // Sky blue
+  
+  // Purples (2)
+  '#6A0DAD', // Deep violet
+  '#FF00FF', // Neon magenta
+  
+  // Universal Accent (1)
+  '#C89F7A', // Warm tan / skin tone
 ];
