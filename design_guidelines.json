@@ -1,0 +1,121 @@
+{
+  "design_guidelines": {
+    "identity": {
+      "name": "PixelForge",
+      "tone": "Utility-First, Tactile, Modern Minimal",
+      "theme": "light",
+      "persona_ref": "E1 - The Anti-AI Designer"
+    },
+    "typography": {
+      "headings": {
+        "family": "Manrope",
+        "weights": ["600", "800"],
+        "usage": "Main titles, Section headers"
+      },
+      "body": {
+        "family": "Inter",
+        "weights": ["400", "500"],
+        "usage": "UI labels, instructions"
+      },
+      "mono": {
+        "family": "JetBrains Mono",
+        "weights": ["500"],
+        "usage": "Hex codes, grid dimensions, technical data"
+      }
+    },
+    "colors": {
+      "palette": {
+        "background": {
+          "primary": "#FDFBF7",
+          "secondary": "#F5F5F0",
+          "surface": "#FFFFFF"
+        },
+        "text": {
+          "primary": "#1C1917",
+          "secondary": "#78716C",
+          "muted": "#A8A29E"
+        },
+        "accent": {
+          "primary": "#F97316",
+          "hover": "#EA580C",
+          "subtle": "#FFEDD5"
+        },
+        "border": {
+          "default": "#E7E5E4",
+          "active": "#F97316"
+        }
+      },
+      "usage_rules": "Background must be warm beige (#FDFBF7). Use Orange (#F97316) strictly for active states, primary buttons, and selected items. Text should be warm charcoal, never pure black."
+    },
+    "layout": {
+      "structure": "Bento Grid Protocol (Mode A)",
+      "container": "max-w-6xl mx-auto p-4 md:p-8",
+      "grid_strategy": "Sidebar/Top for controls, Large area for preview. Split view for Before/After.",
+      "spacing": "Generous. Use gap-6 or gap-8 between major sections."
+    },
+    "components": {
+      "upload_zone": {
+        "style": "dashed border-2 border-border hover:border-accent/50 transition-colors bg-white/50 rounded-xl p-12 text-center cursor-pointer",
+        "icon": "UploadIcon (Lucide)"
+      },
+      "palette_grid": {
+        "style": "grid grid-cols-5 gap-2",
+        "item_style": "w-8 h-8 rounded-md cursor-pointer border border-transparent hover:scale-110 transition-transform shadow-sm ring-offset-2 focus:ring-2 ring-accent"
+      },
+      "preview_container": {
+        "style": "relative aspect-square or 4:3 bg-white rounded-xl shadow-sm border border-border overflow-hidden flex items-center justify-center pixelated-rendering"
+      },
+      "controls": {
+        "slider": "Shadcn Slider with orange track",
+        "switch": "Shadcn Switch for 16px/32px toggle",
+        "button": "Shadcn Button, pill-shaped for primary actions"
+      }
+    },
+    "visual_enhancers": {
+      "shadows": "soft, warm ambient shadows (shadow-orange-500/5)",
+      "borders": "1px solid #E7E5E4. Active elements get 2px orange border.",
+      "texture": "Subtle noise overlay on the beige background to enhance tactile feel."
+    },
+    "assets": {
+      "demo_images": [
+        {
+          "url": "https://images.unsplash.com/photo-1594592237655-9f7e51330b93",
+          "alt": "Golden Retriever Demo",
+          "category": "demo"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1682349110243-95720a9d8401",
+          "alt": "City Sunset Demo",
+          "category": "demo"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2",
+          "alt": "Red Apple Demo",
+          "category": "demo"
+        }
+      ],
+      "icons_library": "lucide-react"
+    },
+    "tech_stack": {
+      "framework": "React",
+      "styling": "Tailwind CSS",
+      "components": "Shadcn UI",
+      "canvas_logic": "HTML5 Canvas API for pixel manipulation"
+    },
+    "instructions_to_main_agent": [
+      "Implement a dual-canvas approach: one hidden canvas for processing, one visible for rendering.",
+      "Use 'image-rendering: pixelated' CSS property on the preview canvas to ensure sharp edges.",
+      "The 20-color palette should be an array of hex codes. Implement a 'nearest neighbor' color matching algorithm in JS.",
+      "Ensure the drag-and-drop zone handles file validation (images only).",
+      "Make the UI responsive: Stack controls above preview on mobile, side-by-side on desktop.",
+      "Do not use heavy external libraries for image processing; stick to raw Canvas API for speed.",
+      "Add a 'Download' button that exports the canvas content as PNG."
+    ],
+    "universal_guidelines": [
+      "Do not use gradients for the orange accent; keep it flat and bold.",
+      "Ensure all interactive elements have hover states (opacity change or transform).",
+      "Use generous padding inside containers.",
+      "Add data-testid to all inputs and buttons."
+    ]
+  }
+}
