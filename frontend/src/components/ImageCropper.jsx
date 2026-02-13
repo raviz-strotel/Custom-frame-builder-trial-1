@@ -145,21 +145,29 @@ export default function ImageCropper({ image, onCropComplete, onCancel }) {
           onTouchEnd={handlePointerUp}
           onTouchCancel={handlePointerUp}
         >
-          {imageSrc && imageDimensions.width > 0 ? (
-            <div className="relative" style={{ width: imageDimensions.width, height: imageDimensions.height }}>
-              {/* Image */}
+          {imageSrc ? (
+            <div className="relative">
+              {/* Image - render without size constraint first */}
               <img
                 src={imageSrc}
                 alt="Upload"
                 onLoad={handleImageLoad}
-                className="block w-full h-full object-cover rounded-lg select-none pointer-events-none"
-                style={{ 
-                  width: imageDimensions.width, 
-                  height: imageDimensions.height,
-                  userSelect: 'none'
-                }}
-                draggable={false}
+                className="hidden"
               />
+              
+              {imageDimensions.width > 0 && (
+                <div style={{ width: imageDimensions.width, height: imageDimensions.height }}>
+                  <img
+                    src={imageSrc}
+                    alt="Upload"
+                    className="block w-full h-full object-cover rounded-lg select-none pointer-events-none"
+                    style={{ 
+                      width: imageDimensions.width, 
+                      height: imageDimensions.height,
+                      userSelect: 'none'
+                    }}
+                    draggable={false}
+                  />
               
               {/* Overlay - outside crop area */}
               <div className="absolute inset-0 pointer-events-none">
