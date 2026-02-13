@@ -1,165 +1,233 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Crop, RotateCcw } from 'lucide-react';
+import { Crop } from 'lucide-react';
 
 export default function ImageCropper({ image, onCropComplete, onCancel }) {
-  const canvasRef = useRef(null);
-  const [cropArea, setCropArea] = useState(null);
+  const containerRef = useRef(null);
+  const imageRef = useRef(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [cropSize, setCropSize] = useState(300);
 
   useEffect(() => {
-    if (image && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const containerWidth = 600;
-      const scale = containerWidth / Math.max(image.width, image.height);
+    if (image && imageRef.current) {
+      const img = imageRef.current;
+      const container = containerRef.current;
       
-      canvas.width = image.width * scale;
-      canvas.height = image.height * scale;
+      // Calculate displayed image dimensions
+      const containerWidth = Math.min(600, container.clientWidth - 32);
+      const imgAspect = image.width / image.height;
       
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      let displayWidth, displayHeight;
+      if (imgAspect > 1) {
+        displayWidth = containerWidth;
+        displayHeight = containerWidth / imgAspect;
+      } else {
+        displayHeight = containerWidth;
+        displayWidth = containerWidth * imgAspect;
+      }
       
-      // Set default crop to center square
-      const size = Math.min(canvas.width, canvas.height) * 0.8;
-      const x = (canvas.width - size) / 2;
-      const y = (canvas.height - size) / 2;
-      setCropArea({ x, y, width: size, height: size });
+      setImageDimensions({ width: displayWidth, height: displayHeight });
+      
+      // Set crop size to 80% of smaller dimension
+      const size = Math.min(displayWidth, displayHeight) * 0.8;
+      setCropSize(size);
+      
+      // Center the crop box
+      setCropPosition({
+        x: (displayWidth - size) / 2,
+        y: (displayHeight - size) / 2
+      });
+      
+      setImageLoaded(true);
     }
   }, [image]);
 
-  useEffect(() => {
-    if (cropArea && canvasRef.current) {
-      drawCanvas();
-    }
-  }, [cropArea]);
-
-  const drawCanvas = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const containerWidth = 600;
-    const scale = containerWidth / Math.max(image.width, image.height);
+  const handlePointerDown = (e) => {
+    e.preventDefault();
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+    const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-    
-    // Draw overlay
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Clear crop area
-    if (cropArea) {
-      ctx.clearRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
-      ctx.drawImage(
-        image,
-        cropArea.x / scale, cropArea.y / scale, cropArea.width / scale, cropArea.height / scale,
-        cropArea.x, cropArea.y, cropArea.width, cropArea.height
-      );
-      
-      // Draw border
-      ctx.strokeStyle = '#F97316';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(cropArea.x, cropArea.y, cropArea.width, cropArea.height);
+    // Check if click is inside crop box
+    if (
+      x >= cropPosition.x &&
+      x <= cropPosition.x + cropSize &&
+      y >= cropPosition.y &&
+      y <= cropPosition.y + cropSize
+    ) {
+      setIsDragging(true);
+      setDragStart({
+        x: x - cropPosition.x,
+        y: y - cropPosition.y
+      });
     }
   };
 
-  const handleMouseDown = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setDragStart({ x, y });
-    setIsDragging(true);
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+    const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+    
+    let newX = x - dragStart.x;
+    let newY = y - dragStart.y;
+    
+    // Constrain to image bounds
+    newX = Math.max(0, Math.min(newX, imageDimensions.width - cropSize));
+    newY = Math.max(0, Math.min(newY, imageDimensions.height - cropSize));
+    
+    setCropPosition({ x: newX, y: newY });
   };
 
-  const handleMouseMove = (e) => {
-    if (!isDragging || !dragStart) return;
-    
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const width = Math.abs(x - dragStart.x);
-    const height = Math.abs(y - dragStart.y);
-    const size = Math.min(width, height);
-    
-    setCropArea({
-      x: Math.min(dragStart.x, x),
-      y: Math.min(dragStart.y, y),
-      width: size,
-      height: size
-    });
-  };
-
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setIsDragging(false);
   };
 
   const handleConfirmCrop = () => {
-    if (!cropArea) return;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
     
-    const canvas = canvasRef.current;
-    const containerWidth = 600;
-    const scale = containerWidth / Math.max(image.width, image.height);
+    // Calculate scale from displayed size to actual image size
+    const scaleX = image.width / imageDimensions.width;
+    const scaleY = image.height / imageDimensions.height;
     
-    const croppedCanvas = document.createElement('canvas');
-    const ctx = croppedCanvas.getContext('2d');
+    // Calculate crop area in original image coordinates
+    const cropX = cropPosition.x * scaleX;
+    const cropY = cropPosition.y * scaleY;
+    const cropWidth = cropSize * scaleX;
+    const cropHeight = cropSize * scaleY;
     
-    croppedCanvas.width = cropArea.width / scale;
-    croppedCanvas.height = cropArea.height / scale;
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
     
     ctx.drawImage(
       image,
-      cropArea.x / scale, cropArea.y / scale, cropArea.width / scale, cropArea.height / scale,
-      0, 0, croppedCanvas.width, croppedCanvas.height
+      cropX, cropY, cropWidth, cropHeight,
+      0, 0, cropWidth, cropHeight
     );
     
     const croppedImage = new Image();
     croppedImage.onload = () => {
       onCropComplete(croppedImage);
     };
-    croppedImage.src = croppedCanvas.toDataURL();
-  };
-
-  const resetCrop = () => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const size = Math.min(canvas.width, canvas.height) * 0.8;
-      const x = (canvas.width - size) / 2;
-      const y = (canvas.height - size) / 2;
-      setCropArea({ x, y, width: size, height: size });
-    }
+    croppedImage.src = canvas.toDataURL();
   };
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-xl border border-border p-4 shadow-sm">
-        <h3 className="font-manrope font-semibold text-lg text-text-primary mb-3">
-          Select Area to Convert
+      <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
+        <h3 className="font-manrope font-semibold text-lg text-text-primary mb-2">
+          Position Your Image
         </h3>
         <p className="text-sm text-text-secondary mb-4">
-          Drag to select a square area of the image for pixel art conversion
+          Drag the selection box to choose which part to convert
         </p>
         
-        <div className="flex justify-center mb-4">
-          <canvas
-            ref={canvasRef}
-            className="border border-border rounded cursor-crosshair"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            data-testid="crop-canvas"
-          />
+        <div 
+          ref={containerRef}
+          className="relative mx-auto flex justify-center items-center touch-none"
+          style={{ minHeight: '400px' }}
+          onMouseDown={handlePointerDown}
+          onMouseMove={handlePointerMove}
+          onMouseUp={handlePointerUp}
+          onMouseLeave={handlePointerUp}
+          onTouchStart={handlePointerDown}
+          onTouchMove={handlePointerMove}
+          onTouchEnd={handlePointerUp}
+        >
+          {imageLoaded && (
+            <div className="relative" style={{ width: imageDimensions.width, height: imageDimensions.height }}>
+              {/* Image */}
+              <img
+                ref={imageRef}
+                src={image.src}
+                alt="Upload"
+                className="block w-full h-full object-cover rounded-lg"
+                style={{ 
+                  width: imageDimensions.width, 
+                  height: imageDimensions.height,
+                  userSelect: 'none',
+                  pointerEvents: 'none'
+                }}
+                draggable={false}
+              />
+              
+              {/* Overlay - outside crop area */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Top overlay */}
+                <div 
+                  className="absolute top-0 left-0 right-0 bg-black/50"
+                  style={{ height: cropPosition.y }}
+                />
+                {/* Bottom overlay */}
+                <div 
+                  className="absolute bottom-0 left-0 right-0 bg-black/50"
+                  style={{ height: imageDimensions.height - cropPosition.y - cropSize }}
+                />
+                {/* Left overlay */}
+                <div 
+                  className="absolute left-0 bg-black/50"
+                  style={{ 
+                    top: cropPosition.y,
+                    height: cropSize,
+                    width: cropPosition.x
+                  }}
+                />
+                {/* Right overlay */}
+                <div 
+                  className="absolute right-0 bg-black/50"
+                  style={{ 
+                    top: cropPosition.y,
+                    height: cropSize,
+                    width: imageDimensions.width - cropPosition.x - cropSize
+                  }}
+                />
+              </div>
+              
+              {/* Crop box */}
+              <div
+                className={`absolute border-4 border-accent rounded-lg transition-shadow ${
+                  isDragging ? 'cursor-grabbing shadow-2xl' : 'cursor-grab shadow-lg'
+                }`}
+                style={{
+                  left: cropPosition.x,
+                  top: cropPosition.y,
+                  width: cropSize,
+                  height: cropSize,
+                  boxShadow: isDragging ? '0 0 0 2px rgba(249, 115, 22, 0.3)' : 'none'
+                }}
+                data-testid="crop-box"
+              >
+                {/* Corner indicators */}
+                <div className="absolute -top-2 -left-2 w-6 h-6 bg-accent rounded-full border-2 border-white" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-accent rounded-full border-2 border-white" />
+                <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-accent rounded-full border-2 border-white" />
+                <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-accent rounded-full border-2 border-white" />
+                
+                {/* Center drag hint */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="bg-accent/90 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                    {isDragging ? 'Moving...' : 'Drag to Move'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center mt-6">
           <Button
             variant="outline"
-            onClick={resetCrop}
-            data-testid="reset-crop-btn"
+            onClick={onCancel}
+            data-testid="cancel-crop-btn"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset Selection
+            Cancel
           </Button>
           <Button
             onClick={handleConfirmCrop}
