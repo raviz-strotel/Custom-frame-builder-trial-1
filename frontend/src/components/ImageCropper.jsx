@@ -230,6 +230,9 @@ export default function ImageCropper({ image, onCropComplete, onCancel }) {
                   </div>
                 )}
               </div>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
