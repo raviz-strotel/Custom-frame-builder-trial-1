@@ -145,43 +145,34 @@ export default function ImageCropper({ image, onCropComplete, onCancel }) {
           onTouchEnd={handlePointerUp}
           onTouchCancel={handlePointerUp}
         >
-          {imageSrc ? (
-            <div className="relative">
-              {/* Image - render without size constraint first */}
+          {/* Hidden image for loading dimensions */}
+          <img
+            src={imageSrc}
+            alt=""
+            onLoad={handleImageLoad}
+            className="hidden"
+          />
+          
+          {imageDimensions.width > 0 ? (
+            <div className="relative" style={{ width: imageDimensions.width, height: imageDimensions.height }}>
+              {/* Visible image */}
               <img
                 src={imageSrc}
                 alt="Upload"
-                onLoad={handleImageLoad}
-                className="hidden"
+                className="block w-full h-full object-cover rounded-lg select-none pointer-events-none"
+                draggable={false}
               />
-              
-              {imageDimensions.width > 0 && (
-                <div style={{ width: imageDimensions.width, height: imageDimensions.height }}>
-                  <img
-                    src={imageSrc}
-                    alt="Upload"
-                    className="block w-full h-full object-cover rounded-lg select-none pointer-events-none"
-                    style={{ 
-                      width: imageDimensions.width, 
-                      height: imageDimensions.height,
-                      userSelect: 'none'
-                    }}
-                    draggable={false}
-                  />
               
               {/* Overlay - outside crop area */}
               <div className="absolute inset-0 pointer-events-none">
-                {/* Top overlay */}
                 <div 
                   className="absolute top-0 left-0 right-0 bg-black/50"
                   style={{ height: cropPosition.y }}
                 />
-                {/* Bottom overlay */}
                 <div 
                   className="absolute bottom-0 left-0 right-0 bg-black/50"
                   style={{ height: imageDimensions.height - cropPosition.y - cropSize }}
                 />
-                {/* Left overlay */}
                 <div 
                   className="absolute left-0 bg-black/50"
                   style={{ 
@@ -190,7 +181,6 @@ export default function ImageCropper({ image, onCropComplete, onCancel }) {
                     width: cropPosition.x
                   }}
                 />
-                {/* Right overlay */}
                 <div 
                   className="absolute right-0 bg-black/50"
                   style={{ 
@@ -227,9 +217,6 @@ export default function ImageCropper({ image, onCropComplete, onCancel }) {
                     <div className="bg-accent/90 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
                       Drag to Move
                     </div>
-                  </div>
-                )}
-              </div>
                   </div>
                 )}
               </div>
