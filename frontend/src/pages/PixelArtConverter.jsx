@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import UploadZone from '@/components/UploadZone';
-import ImageCropper from '@/components/ImageCropper';
-import { DEFAULT_PALETTE } from '@/utils/colorUtils';
-import { pixelateImage, drawPixelatedImage } from '@/utils/pixelateImage';
+import SmoothCropper from '@/components/SmoothCropper';
+import { advancedPixelate, drawAdvancedPixelArt } from '@/utils/advancedPixelate';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function PixelArtConverter() {
@@ -11,6 +10,7 @@ export default function PixelArtConverter() {
   const [croppedImage, setCroppedImage] = useState(null);
   const [pixelatedData, setPixelatedData] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const canvasRef = React.useRef(null);
 
   const handleImageUpload = (img) => {
@@ -20,18 +20,28 @@ export default function PixelArtConverter() {
     setPixelatedData(null);
   };
 
-  const handleCropComplete = (croppedImg) => {
+  const handleCropComplete = async (croppedImg) => {
     setCroppedImage(croppedImg);
     setShowCropper(false);
+    setProcessing(true);
     
-    // Convert to pixel art with fixed 32x32 size
-    const imageData = pixelateImage(croppedImg, 32, DEFAULT_PALETTE);
-    setPixelatedData(imageData);
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+      try {
+        // Use advanced pixelation with dithering
+        const imageData = advancedPixelate(croppedImg, 32, true);
+        setPixelatedData(imageData);
+      } catch (error) {
+        console.error('Pixelation error:', error);
+      } finally {
+        setProcessing(false);
+      }
+    }, 100);
   };
 
   useEffect(() => {
     if (pixelatedData && canvasRef.current) {
-      drawPixelatedImage(canvasRef.current, pixelatedData, 512);
+      drawAdvancedPixelArt(canvasRef.current, pixelatedData, 512);
     }
   }, [pixelatedData]);
 
@@ -43,7 +53,7 @@ export default function PixelArtConverter() {
   };
 
   const handleConfirm = () => {
-    alert('Pixel art confirmed! You can now integrate this output into your workflow.');
+    alert('Pixel art confirmed! Ready for integration.');
   };
 
   return (
@@ -56,18 +66,25 @@ export default function PixelArtConverter() {
         )}
 
         {showCropper && sourceImage && (
-          <ImageCropper
+          <SmoothCropper
             image={sourceImage}
             onCropComplete={handleCropComplete}
             onCancel={handleStartOver}
           />
         )}
 
-        {pixelatedData && !showCropper && (
+        {processing && (
+          <div className="bg-white rounded-xl border border-border p-12 shadow-sm text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+            <p className="text-text-secondary">Processing with advanced algorithms...</p>
+          </div>
+        )}
+
+        {pixelatedData && !showCropper && !processing && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
               <h3 className="font-manrope font-semibold text-lg text-text-primary mb-4 text-center">
-                Pixel Art Preview (32 × 32)
+                Pixel Art (32 × 32)
               </h3>
               
               <div className="flex justify-center mb-6">
@@ -82,27 +99,18 @@ export default function PixelArtConverter() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  variant="outline"
-                  onClick={handleStartOver}
-                  data-testid="start-over-btn"
-                >
+                <Button variant="outline" onClick={handleStartOver} data-testid="start-over-btn">
                   Upload New Image
                 </Button>
-                <Button
-                  onClick={handleConfirm}
-                  className="bg-accent hover:bg-accent-hover text-white"
-                  data-testid="confirm-btn"
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Confirm
+                <Button onClick={handleConfirm} className="bg-accent hover:bg-accent-hover text-white" data-testid="confirm-btn">
+                  <CheckCircle2 className="w-4 h-4 mr-2" />Confirm
                 </Button>
               </div>
             </div>
 
             <div className="bg-accent/5 border border-accent/20 rounded-lg p-4">
               <p className="text-sm text-text-secondary text-center">
-                Your image has been converted to 32 × 32 pixel art using a fixed 40-color palette
+                Processed with smart color quantization and Floyd-Steinberg dithering
               </p>
             </div>
           </div>
