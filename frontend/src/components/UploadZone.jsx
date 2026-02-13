@@ -56,8 +56,11 @@ export default function UploadZone({ onImageUpload }) {
           <h3 className="font-manrope font-semibold text-lg text-text-primary mb-1">
             Upload an Image
           </h3>
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary mb-2">
             Drag and drop or click to browse
+          </p>
+          <p className="text-xs text-text-muted">
+            Supported formats: JPG, PNG, GIF, WebP, BMP
           </p>
         </div>
         <Button

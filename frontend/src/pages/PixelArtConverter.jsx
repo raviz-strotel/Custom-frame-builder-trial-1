@@ -1,170 +1,112 @@
 import React, { useState, useEffect } from 'react';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
 import UploadZone from '@/components/UploadZone';
-import ColorPalette from '@/components/ColorPalette';
-import PixelPreview from '@/components/PixelPreview';
+import ImageCropper from '@/components/ImageCropper';
 import { DEFAULT_PALETTE } from '@/utils/colorUtils';
-import { pixelateImage } from '@/utils/pixelateImage';
-import { Sparkles } from 'lucide-react';
+import { pixelateImage, drawPixelatedImage } from '@/utils/pixelateImage';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function PixelArtConverter() {
   const [sourceImage, setSourceImage] = useState(null);
-  const [pixelSize, setPixelSize] = useState('32');
-  const [palette, setPalette] = useState([...DEFAULT_PALETTE]);
+  const [croppedImage, setCroppedImage] = useState(null);
   const [pixelatedData, setPixelatedData] = useState(null);
-  const [originalImageData, setOriginalImageData] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const canvasRef = React.useRef(null);
 
   const handleImageUpload = (img) => {
     setSourceImage(img);
-    
-    // Create original preview
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const size = parseInt(pixelSize);
-    canvas.width = size;
-    canvas.height = size;
-    ctx.drawImage(img, 0, 0, size, size);
-    setOriginalImageData(ctx.getImageData(0, 0, size, size));
+    setShowCropper(true);
+    setCroppedImage(null);
+    setPixelatedData(null);
   };
 
-  // Reprocess image when pixel size or palette changes
+  const handleCropComplete = (croppedImg) => {
+    setCroppedImage(croppedImg);
+    setShowCropper(false);
+    
+    // Convert to pixel art with fixed 32x32 size
+    const imageData = pixelateImage(croppedImg, 32, DEFAULT_PALETTE);
+    setPixelatedData(imageData);
+  };
+
   useEffect(() => {
-    if (sourceImage) {
-      const size = parseInt(pixelSize);
-      const imageData = pixelateImage(sourceImage, size, palette);
-      setPixelatedData(imageData);
-      
-      // Update original preview with new size
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = size;
-      canvas.height = size;
-      ctx.drawImage(sourceImage, 0, 0, size, size);
-      setOriginalImageData(ctx.getImageData(0, 0, size, size));
+    if (pixelatedData && canvasRef.current) {
+      drawPixelatedImage(canvasRef.current, pixelatedData, 512);
     }
-  }, [sourceImage, pixelSize, palette]);
+  }, [pixelatedData]);
+
+  const handleStartOver = () => {
+    setSourceImage(null);
+    setCroppedImage(null);
+    setPixelatedData(null);
+    setShowCropper(false);
+  };
+
+  const handleConfirm = () => {
+    alert('Pixel art confirmed! You can now integrate this output into your workflow.');
+  };
 
   return (
-    <div className="min-h-screen bg-background-primary">
-      {/* Header */}
-      <header className="border-b border-border bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-manrope font-bold text-2xl md:text-3xl text-text-primary">
-                PixelForge
-              </h1>
-              <p className="text-sm text-text-secondary">Transform images into pixel art</p>
-            </div>
+    <div className="min-h-screen bg-background-primary py-8">
+      <main className="max-w-4xl mx-auto px-4 md:px-8">
+        {!sourceImage && !showCropper && !pixelatedData && (
+          <div className="space-y-6">
+            <UploadZone onImageUpload={handleImageUpload} />
           </div>
-        </div>
-      </header>
+        )}
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Left Column: Upload & Controls */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Upload Zone */}
-            {!sourceImage && <UploadZone onImageUpload={handleImageUpload} />}
-            
-            {sourceImage && (
-              <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-manrope font-semibold text-lg text-text-primary">
-                    Image Loaded
-                  </h3>
-                  <button
-                    onClick={() => {
-                      setSourceImage(null);
-                      setPixelatedData(null);
-                      setOriginalImageData(null);
-                    }}
-                    className="text-sm text-accent hover:text-accent-hover transition-colors"
-                    data-testid="remove-image-btn"
-                  >
-                    Remove
-                  </button>
-                </div>
-                <p className="text-sm text-text-secondary">✓ Ready to convert</p>
-              </div>
-            )}
+        {showCropper && sourceImage && (
+          <ImageCropper
+            image={sourceImage}
+            onCropComplete={handleCropComplete}
+            onCancel={handleStartOver}
+          />
+        )}
 
-            {/* Pixel Size Selector */}
+        {pixelatedData && !showCropper && (
+          <div className="space-y-6">
             <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
-              <Label className="font-manrope font-semibold text-base text-text-primary mb-4 block">
-                Pixel Size
-              </Label>
-              <RadioGroup value={pixelSize} onValueChange={setPixelSize} data-testid="pixel-size-selector">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/5 transition-colors cursor-pointer">
-                    <RadioGroupItem value="16" id="size-16" data-testid="size-16" />
-                    <Label htmlFor="size-16" className="cursor-pointer flex-1">
-                      <span className="font-jetbrains text-sm text-text-primary">16 × 16</span>
-                      <span className="text-xs text-text-muted ml-2">Retro</span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent/5 transition-colors cursor-pointer">
-                    <RadioGroupItem value="32" id="size-32" data-testid="size-32" />
-                    <Label htmlFor="size-32" className="cursor-pointer flex-1">
-                      <span className="font-jetbrains text-sm text-text-primary">32 × 32</span>
-                      <span className="text-xs text-text-muted ml-2">Standard</span>
-                    </Label>
-                  </div>
+              <h3 className="font-manrope font-semibold text-lg text-text-primary mb-4 text-center">
+                Pixel Art Preview (32 × 32)
+              </h3>
+              
+              <div className="flex justify-center mb-6">
+                <div className="bg-background-secondary rounded-xl border border-border overflow-hidden shadow-sm inline-block">
+                  <canvas
+                    ref={canvasRef}
+                    className="max-w-full h-auto"
+                    style={{ imageRendering: 'pixelated' }}
+                    data-testid="pixel-preview-canvas"
+                  />
                 </div>
-              </RadioGroup>
-            </div>
-
-            {/* Color Palette */}
-            <ColorPalette colors={palette} onColorsChange={setPalette} />
-          </div>
-
-          {/* Right Column: Preview */}
-          <div className="lg:col-span-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Original Preview */}
-              <div data-testid="original-preview">
-                <PixelPreview
-                  imageData={originalImageData}
-                  pixelSize={parseInt(pixelSize)}
-                  title="Original"
-                />
               </div>
 
-              {/* Pixelated Preview */}
-              <div data-testid="converted-preview">
-                <PixelPreview
-                  imageData={pixelatedData}
-                  pixelSize={parseInt(pixelSize)}
-                  title="Pixel Art"
-                />
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={handleStartOver}
+                  data-testid="start-over-btn"
+                >
+                  Upload New Image
+                </Button>
+                <Button
+                  onClick={handleConfirm}
+                  className="bg-accent hover:bg-accent-hover text-white"
+                  data-testid="confirm-btn"
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  Confirm
+                </Button>
               </div>
             </div>
 
-            {pixelatedData && (
-              <div className="mt-6 p-6 bg-white rounded-xl border border-border shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-6 h-6 text-accent" />
-                  </div>
-                  <div>
-                    <h3 className="font-manrope font-semibold text-base text-text-primary mb-1">
-                      Conversion Complete
-                    </h3>
-                    <p className="text-sm text-text-secondary">
-                      Your image has been converted to {pixelSize} × {pixelSize} pixel art using {palette.length} colors.
-                      Adjust the color palette or pixel size to see different results.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            <div className="bg-accent/5 border border-accent/20 rounded-lg p-4">
+              <p className="text-sm text-text-secondary text-center">
+                Your image has been converted to 32 × 32 pixel art using a fixed 40-color palette
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
