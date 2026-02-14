@@ -152,7 +152,7 @@ export default function PixelArtConverter() {
                 <PlainCropper
                   image={sourceImage}
                   cropBox={cropBox}
-                  onCropBoxChange={setCropBox}
+                  onCropBoxChange={handleCropBoxChange}
                   visible={cropperVisible}
                 />
               </div>
