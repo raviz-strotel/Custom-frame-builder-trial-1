@@ -115,15 +115,15 @@ export default function PixelArtConverter() {
         {!sourceImage ? (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h1 className="font-manrope font-bold text-3xl text-text-primary mb-2">Pixel Art Studio</h1>
-              <p className="text-text-secondary">Create custom 32x32 pixel art frames</p>
+              <h1 className="font-manrope font-bold text-3xl text-text-primary mb-2">Build your custom frame</h1>
+              <p className="text-text-secondary">Upload an image to get started</p>
             </div>
             <UploadZone onImageUpload={handleImageUpload} />
           </div>
         ) : (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="font-manrope font-bold text-2xl text-text-primary">Create Your Frame</h2>
+              <h2 className="font-manrope font-bold text-2xl text-text-primary">Customize Your Frame</h2>
               <Button variant="outline" onClick={handleStartOver}>New Image</Button>
             </div>
             
