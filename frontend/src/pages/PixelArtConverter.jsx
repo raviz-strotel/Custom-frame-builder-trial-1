@@ -70,22 +70,33 @@ export default function PixelArtConverter() {
     if (processingTimeoutRef.current) clearTimeout(processingTimeoutRef.current);
     
     processingTimeoutRef.current = setTimeout(() => {
-      croppedImg.onload = () => {
+      const processWithImage = () => {
         try {
           const adjustedCanvas = applyImageAdjustments(croppedImg, adjustments);
           const adjustedImg = new Image();
-          adjustedImg.onload = () => {
+          
+          const processAdjusted = () => {
             croppedImageRef.current = adjustedImg;
             const imageData = advancedPixelate(adjustedImg, 32, true);
             setPixelData(imageData);
             setProcessing(false);
           };
+          
+          adjustedImg.onload = processAdjusted;
           adjustedImg.src = adjustedCanvas.toDataURL();
+          
+          // Handle already loaded case
+          if (adjustedImg.complete) processAdjusted();
         } catch (error) {
           console.error('Processing error:', error);
           setProcessing(false);
         }
       };
+      
+      croppedImg.onload = processWithImage;
+      
+      // Handle already loaded case (data URLs may load synchronously)
+      if (croppedImg.complete) processWithImage();
     }, 150);
   };
 
