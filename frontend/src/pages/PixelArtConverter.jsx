@@ -12,6 +12,7 @@ export default function PixelArtConverter() {
   const [pixelData, setPixelData] = useState(null);
   const [cropperVisible, setCropperVisible] = useState(true);
   const [cropBox, setCropBox] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
   const [processing, setProcessing] = useState(false);
   const [adjustments, setAdjustments] = useState({
     brightness: 0,
@@ -26,21 +27,25 @@ export default function PixelArtConverter() {
     setSourceImage(img);
     setCropperVisible(true);
     setPixelData(null);
+    setCropBox({ x: 0, y: 0, width: 0, height: 0 });
+    setDisplayDimensions({ width: 0, height: 0 });
+  };
+
+  const handleCropBoxChange = (newCropBox, dimensions) => {
+    setCropBox(newCropBox);
+    if (dimensions) {
+      setDisplayDimensions(dimensions);
+    }
   };
 
   const getCroppedImage = () => {
-    if (!sourceImage || cropBox.width === 0) return null;
+    if (!sourceImage || cropBox.width === 0 || displayDimensions.width === 0) return null;
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    const imgElement = document.querySelector('img[alt="Uploaded"]');
-    if (!imgElement) return null;
-    
-    const displayWidth = imgElement.width;
-    const displayHeight = imgElement.height;
-    const scaleX = sourceImage.width / displayWidth;
-    const scaleY = sourceImage.height / displayHeight;
+    const scaleX = sourceImage.width / displayDimensions.width;
+    const scaleY = sourceImage.height / displayDimensions.height;
     
     const cropX = cropBox.x * scaleX;
     const cropY = cropBox.y * scaleY;
