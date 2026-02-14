@@ -37,7 +37,7 @@ export default function PlainCropper({ image, cropBox, onCropBoxChange, visible 
         y: (displayHeight - size) / 2,
         width: size,
         height: size
-      });
+      }, { width: displayWidth, height: displayHeight });
     }
   };
 
