@@ -1,6 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { EyeOff, Eye } from 'lucide-react';
 
 export default function PlainCropper({ image, cropBox, onCropBoxChange, visible }) {
   const containerRef = useRef(null);
