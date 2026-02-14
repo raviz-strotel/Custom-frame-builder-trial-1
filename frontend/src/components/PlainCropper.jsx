@@ -79,7 +79,7 @@ export default function PlainCropper({ image, cropBox, onCropBoxChange, visible 
     newX = Math.max(0, Math.min(newX, imageDimensions.width - cropBox.width));
     newY = Math.max(0, Math.min(newY, imageDimensions.height - cropBox.height));
     
-    onCropBoxChange({ ...cropBox, x: newX, y: newY });
+    onCropBoxChange({ ...cropBox, x: newX, y: newY }, imageDimensions);
   };
 
   const handleMouseUp = () => {
