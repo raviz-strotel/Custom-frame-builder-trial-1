@@ -86,13 +86,19 @@ export default function PlainCropper({ image, cropBox, onCropBoxChange, visible 
     setIsDragging(false);
   };
 
-  if (!visible || imageDimensions.width === 0) return null;
+  // Always render hidden image for dimension loading
+  if (!imageSrc) return null;
 
   return (
     <div 
       ref={containerRef}
       className="relative mx-auto select-none"
-      style={{ width: imageDimensions.width, height: imageDimensions.height, touchAction: 'none' }}
+      style={{ 
+        width: imageDimensions.width || 'auto', 
+        height: imageDimensions.height || 'auto', 
+        touchAction: 'none',
+        display: visible && imageDimensions.width > 0 ? 'block' : 'none'
+      }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -101,7 +107,7 @@ export default function PlainCropper({ image, cropBox, onCropBoxChange, visible 
       onTouchMove={handleMouseMove}
       onTouchEnd={handleMouseUp}
     >
-      <img src={imageSrc} alt="" onLoad={handleImageLoad} className="hidden" />
+      <img src={imageSrc} alt="" onLoad={handleImageLoad} style={{ display: 'none' }} />
       <img src={imageSrc} alt="Uploaded" className="w-full h-full object-cover rounded-lg" draggable={false} />
       
       {/* Overlay */}
