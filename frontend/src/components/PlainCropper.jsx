@@ -90,45 +90,56 @@ export default function PlainCropper({ image, cropBox, onCropBoxChange, visible 
   if (!imageSrc) return null;
 
   return (
-    <div 
-      ref={containerRef}
-      className="relative mx-auto select-none"
-      style={{ 
-        width: imageDimensions.width || 'auto', 
-        height: imageDimensions.height || 'auto', 
-        touchAction: 'none',
-        display: visible && imageDimensions.width > 0 ? 'block' : 'none'
-      }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onTouchStart={handleMouseDown}
-      onTouchMove={handleMouseMove}
-      onTouchEnd={handleMouseUp}
-    >
-      <img src={imageSrc} alt="" onLoad={handleImageLoad} style={{ display: 'none' }} />
-      <img src={imageSrc} alt="Uploaded" className="w-full h-full object-cover rounded-lg" draggable={false} />
-      
-      {/* Overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 right-0 bg-black/60" style={{ height: cropBox.y }} />
-        <div className="absolute bottom-0 left-0 right-0 bg-black/60" style={{ height: imageDimensions.height - cropBox.y - cropBox.height }} />
-        <div className="absolute left-0 bg-black/60" style={{ top: cropBox.y, height: cropBox.height, width: cropBox.x }} />
-        <div className="absolute right-0 bg-black/60" style={{ top: cropBox.y, height: cropBox.height, width: imageDimensions.width - cropBox.x - cropBox.width }} />
-      </div>
-      
-      {/* Plain square crop box */}
-      <div
-        className="absolute border-3 border-accent"
-        style={{
-          left: cropBox.x,
-          top: cropBox.y,
-          width: cropBox.width,
-          height: cropBox.height,
-          cursor: isDragging ? 'grabbing' : 'grab'
-        }}
+    <>
+      {/* Hidden image for loading dimensions - always rendered */}
+      <img 
+        src={imageSrc} 
+        alt="" 
+        onLoad={handleImageLoad} 
+        style={{ position: 'absolute', visibility: 'hidden', pointerEvents: 'none' }} 
       />
-    </div>
+      
+      {visible && imageDimensions.width > 0 && (
+        <div 
+          ref={containerRef}
+          className="relative mx-auto select-none"
+          style={{ 
+            width: imageDimensions.width, 
+            height: imageDimensions.height, 
+            touchAction: 'none'
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleMouseDown}
+          onTouchMove={handleMouseMove}
+          onTouchEnd={handleMouseUp}
+        >
+          <img src={imageSrc} alt="Uploaded" className="w-full h-full object-cover rounded-lg" draggable={false} />
+          
+          {/* Overlay */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-0 right-0 bg-black/60" style={{ height: cropBox.y }} />
+            <div className="absolute bottom-0 left-0 right-0 bg-black/60" style={{ height: imageDimensions.height - cropBox.y - cropBox.height }} />
+            <div className="absolute left-0 bg-black/60" style={{ top: cropBox.y, height: cropBox.height, width: cropBox.x }} />
+            <div className="absolute right-0 bg-black/60" style={{ top: cropBox.y, height: cropBox.height, width: imageDimensions.width - cropBox.x - cropBox.width }} />
+          </div>
+          
+          {/* Plain square crop box */}
+          <div
+            className="absolute border-2 border-accent"
+            style={{
+              left: cropBox.x,
+              top: cropBox.y,
+              width: cropBox.width,
+              height: cropBox.height,
+              cursor: isDragging ? 'grabbing' : 'grab',
+              boxShadow: '0 0 0 9999px rgba(0,0,0,0)'
+            }}
+          />
+        </div>
+      )}
+    </>
   );
 }
