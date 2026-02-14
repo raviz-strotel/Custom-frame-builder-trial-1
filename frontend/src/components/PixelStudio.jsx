@@ -187,7 +187,7 @@ export default function PixelStudio({ pixelData, onPixelDataChange, adjustments,
         <div className="lg:col-span-3">
           <div className="bg-white rounded-xl border border-border p-4 shadow-sm">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-manrope font-semibold text-lg">Pixel Art (32×32)</h3>
+              <h3 className="font-manrope font-semibold text-lg">Pixel Art (32x32)</h3>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.25))} disabled={zoom <= 0.5}>
                   <ZoomOut className="w-4 h-4" />
