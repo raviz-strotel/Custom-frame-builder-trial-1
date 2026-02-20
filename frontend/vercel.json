@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors https://*.framer.website https://framer.com *"
+"value": "frame-ancestors https://*.framer.website https://framer.com;"
         }
       ]
     }
